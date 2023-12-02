@@ -1,0 +1,169 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct Veiculo {
+    char proprietario[50];
+    char combustivel[20];
+    char modelo[50];
+    char cor[20];
+    char chassi[20];
+    int ano;
+    char placa[8];
+    struct Veiculo* proximo;
+} Veiculo;
+
+// Função para adicionar um veículo à lista
+Veiculo* adicionarVeiculo(Veiculo* lista) {
+    Veiculo* novoVeiculo = (Veiculo*)malloc(sizeof(Veiculo));
+    if (!novoVeiculo) {
+        printf("Erro ao alocar memoria para o veiculo\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Entre com os dados do veiculo:\n");
+    printf("Proprietario: ");
+    scanf("%s", novoVeiculo->proprietario);
+
+    printf("Combustivel (alcool, diesel, gasolina): ");
+    scanf("%s", novoVeiculo->combustivel);
+
+    printf("Modelo: ");
+    scanf("%s", novoVeiculo->modelo);
+
+    printf("Cor: ");
+    scanf("%s", novoVeiculo->cor);
+
+    printf("Chassi: ");
+    scanf("%s", novoVeiculo->chassi);
+
+    printf("Ano: ");
+    scanf("%d", &novoVeiculo->ano);
+
+    printf("Placa (AAA1111): ");
+    scanf("%s", novoVeiculo->placa);
+
+    novoVeiculo->proximo = lista;
+
+    return novoVeiculo;
+}
+
+// Função para listar todos os proprietários cujos carros são do ano de 2010 ou posterior e movidos a diesel.
+void listarProprietariosAnoDiesel(Veiculo* lista) {
+    printf("Proprietarios dos carros do ano de 2010 ou posterior e movidos a diesel:\n");
+
+    while (lista != NULL) {
+        if (lista->ano >= 2010 && strcmp(lista->combustivel, "diesel") == 0) {
+            printf("Proprietario: %s\n", lista->proprietario);
+        }
+
+        lista = lista->proximo;
+    }
+
+    printf("\n");
+}
+
+// Função para listar todas as placas que começam com a letra J e terminam com 0, 2, 4 ou 7, e seus respectivos proprietários.
+void listarPlacasJDigitosEspecificos(Veiculo* lista) {
+    printf("Placas que começam com J e terminam com 0, 2, 4 ou 7, e seus respectivos proprietarios:\n");
+
+    while (lista != NULL) {
+        if (lista->placa[0] == 'J' && (lista->placa[6] == '0' || lista->placa[6] == '2' || lista->placa[6] == '4' || lista->placa[6] == '7')) {
+            printf("Placa: %s, Proprietario: %s\n", lista->placa, lista->proprietario);
+        }
+
+        lista = lista->proximo;
+    }
+
+    printf("\n");
+}
+
+// Função para listar modelo e cor dos veículos cujas placas possuem como segunda letra uma vogal e cuja soma dos valores numéricos fornece um número par.
+void listarModeloCorPlacasVogalSomaPar(Veiculo* lista) {
+    printf("Modelo e cor dos veiculos cujas placas possuem como segunda letra uma vogal e cuja soma dos valores numericos fornece um numero par:\n");
+
+    while (lista != NULL) {
+        char segundaLetraPlaca = lista->placa[1];
+        int somaNumerosPlaca = 0;
+
+        for (int i = 3; i < 7; i++) {
+            somaNumerosPlaca += lista->placa[i] - '0';
+        }
+
+        if ((segundaLetraPlaca == 'A' || segundaLetraPlaca == 'E' || segundaLetraPlaca == 'I' || segundaLetraPlaca == 'O' || segundaLetraPlaca == 'U') &&
+            somaNumerosPlaca % 2 == 0) {
+            printf("Modelo: %s, Cor: %s\n", lista->modelo, lista->cor);
+        }
+
+        lista = lista->proximo;
+    }
+
+    printf("\n");
+}
+
+// Função para permitir a troca de proprietário com o fornecimento do número do chassi apenas para carros com placas que não possuam nenhum dígito igual a zero.
+void trocarProprietarioSemZero(Veiculo* lista, char chassi[], char novoProprietario[]) {
+    while (lista != NULL) {
+        if (strcmp(lista->chassi, chassi) == 0 && strpbrk(lista->placa, "0") == NULL) {
+            strcpy(lista->proprietario, novoProprietario);
+            printf("Proprietario atualizado com sucesso!\n");
+            return;
+        }
+
+        lista = lista->proximo;
+    }
+
+    printf("Veiculo com chassi %s nao encontrado ou nao atende aos criterios para troca de proprietario.\n", chassi);
+}
+
+// Função para liberar a memória alocada para a lista
+void liberarLista(Veiculo* lista) {
+    Veiculo* temp;
+    while (lista != NULL) {
+        temp = lista;
+        lista = lista->proximo;
+        free(temp);
+    }
+}
+
+int main() {
+    Veiculo* listaVeiculos = NULL;
+    int quantidadeVeiculos;
+
+    printf("Quantos veiculos deseja adicionar? ");
+    scanf("%d", &quantidadeVeiculos);
+
+    for (int i = 0; i < quantidadeVeiculos; i++) {
+        listaVeiculos = adicionarVeiculo(listaVeiculos);
+    }
+
+    // Chamando as funções para listar veículos de acordo com os critérios
+    listarProprietariosAnoDiesel(listaVeiculos);
+    listarPlacasJDigitosEspecificos(listaVeiculos);
+    listarModeloCorPlacasVogalSomaPar(listaVeiculos);
+
+    // Troca de proprietário (exemplo)
+    char chassiTroca[20];
+    char novoProprietario[50];
+
+    printf("\nEntre com o chassi do veiculo para trocar o proprietario: ");
+    scanf("%s", chassiTroca);
+
+    printf("Digite o novo proprietario: ");
+    scanf("%s", novoProprietario);
+
+    trocarProprietarioSemZero(listaVeiculos, chassiTroca, novoProprietario);
+
+    // Exibindo os dados dos veículos
+    printf("\nDados dos veiculos:\n");
+    Veiculo* temp = listaVeiculos;
+    while (temp != NULL) {
+        printf("Proprietario: %s, Modelo: %s, Ano: %d\n", temp->proprietario, temp->modelo, temp->ano);
+        temp = temp->proximo;
+    }
+
+    // Liberando a memória alocada para a lista
+    liberarLista(listaVeiculos);
+
+    return 0;
+}
